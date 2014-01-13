@@ -11,6 +11,7 @@
 #  limitations under the License.
 
 from owslib.wfs import WebFeatureService
+from owslib.wms import WebMapService
 from RequestsLibrary import RequestsLibrary
 
 __version__ = '0.1'
@@ -23,6 +24,14 @@ class OGCServiceLibrary(RequestsLibrary):
         self._url = ''
         self._service_type = ''
         self._ogc_version = '1.1.0'
+
+    def set_ogc_version(self,ogc_version):
+        """
+        Set the ogc version (default is 1.1.0)
+        use this if you wish to set to something else
+        | Set ogc version | version |
+        """
+        self._ogc_version = ogc_version
 
     def connect_to_url(self,url):
         """
@@ -44,6 +53,8 @@ class OGCServiceLibrary(RequestsLibrary):
         """
         self._url = url
 
+    #WFS Layer methods
+
     def get_number_of_wfs_layers(self):
         """
         Get a count of the layers.
@@ -63,6 +74,16 @@ class OGCServiceLibrary(RequestsLibrary):
         """
         wfs = WebFeatureService(self._url, version=self._ogc_version)
         self._result = layer_name in wfs.contents.keys()
+
+    #WMS Layer methods
+    def check_get_png_image(self):
+        """
+        Check that we can successfully get a png image
+        | Check get png image |
+
+        """
+        wms = WebMapService(self._url)
+        # see http://geopython.github.io/OWSLib/
 
     def result_should_be(self,expected=0):
         """
