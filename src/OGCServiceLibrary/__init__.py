@@ -78,16 +78,16 @@ class OGCServiceLibrary(RequestsLibrary):
 
     #WMS Layer methods
 
-    def check_get_wms_image(self,layer_name,srs,bbox,min_size=0):
+    def check_get_wms_image(self,layer_name,srs,min_x,min_y,max_x,max_y,min_size=0):
         """
         Check that we can successfully get a png image
-        | Check get wms image | my_layer_name | srs (e.g. EPSG:4326) | extent e.g (-112,55,-106,71)
+        | Check get wms image | my_layer_name | srs (e.g. EPSG:4326) | MinX | MinY | MaxX |MaxY
         | Minimum size (KB) |
         """
         wms = WebMapService(self._url,version=self._ogc_version)
 
         img = wms.getmap( layers = [layer_name], srs=srs,
-                  bbox=bbox,size=(300,300),format='image/png')
+                  bbox=(float(min_x),float(min_y),float(max_x),float(max_y)),size=(300,300),format='image/png')
 
         out = open('test.png','wb')
         out.write(img.read())
@@ -99,8 +99,8 @@ class OGCServiceLibrary(RequestsLibrary):
 
         os.remove('test.png')
 
-        if size < min_size:
-            raise AssertionError("Image is less that expected size of {0} KB" % min_size)
+        if float(size) < float(min_size):
+            raise AssertionError("Image is of size %s KB, less that expected size of %s KB" % (size,min_size))
 
 
     def result_should_be(self,expected=0):
