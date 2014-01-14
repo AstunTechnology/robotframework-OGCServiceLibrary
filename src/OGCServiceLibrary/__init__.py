@@ -13,6 +13,7 @@
 from owslib.wfs import WebFeatureService
 from owslib.wms import WebMapService
 from RequestsLibrary import RequestsLibrary
+import os
 
 __version__ = '0.1'
 
@@ -76,14 +77,31 @@ class OGCServiceLibrary(RequestsLibrary):
         self._result = layer_name in wfs.contents.keys()
 
     #WMS Layer methods
-    def check_get_png_image(self):
+
+    def check_get_wms_image(self,layer_name,srs,bbox,min_size=0):
         """
         Check that we can successfully get a png image
-        | Check get png image |
-
+        | Check get wms image | my_layer_name | srs (e.g. EPSG:4326) | extent e.g (-112,55,-106,71)
+        | Minimum size (KB) |
         """
-        wms = WebMapService(self._url)
-        # see http://geopython.github.io/OWSLib/
+        wms = WebMapService(self._url,version=self._ogc_version)
+
+        img = wms.getmap( layers = [layer_name], srs=srs,
+                  bbox=bbox,size=(300,300),format='image/png')
+
+        out = open('test.png','wb')
+        out.write(img.read())
+        out.close()
+
+        f = open('test.png','rb')
+        size = os.path.getsize('test.png') / 1024
+        f.close()
+
+        os.remove('test.png')
+
+        if size < min_size:
+            raise AssertionError("Image is less that expected size of {0} KB" % min_size)
+
 
     def result_should_be(self,expected=0):
         """
