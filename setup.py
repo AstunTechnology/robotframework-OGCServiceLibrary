@@ -29,7 +29,8 @@ def main():
           author_email = 'github@astuntechnology.com',
           url          = 'https://github.com/AstunTechnology/Robotframework-OGCServiceLibrary',
           package_dir  = { '' : 'src'},
-          packages     = ['OGCServiceLibrary']
+          packages     = ['OGCServiceLibrary'],
+          install_requires = ['owslib','robotframework-requests']
           )
 
 
