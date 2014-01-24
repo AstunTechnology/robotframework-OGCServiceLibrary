@@ -14,6 +14,7 @@ from owslib.wfs import WebFeatureService
 from owslib.wms import WebMapService
 from RequestsLibrary import RequestsLibrary
 import os
+import math
 
 __version__ = '0.1'
 
@@ -58,31 +59,38 @@ class OGCServiceLibrary(RequestsLibrary):
 
     def get_number_of_wfs_layers(self):
         """
-        Get a count of the layers.
-        Fail if the layers returned is not equal to the  expected, example:
-        | Get number of layers | expected_number_of_layers |
+        Get a count of the wfs layers for the current service url. Returns integer
+        | ${num_layers} | Get number of layers |
+        | Should Be Equal As Integers | ${num_layers} | 6 |
 
         """
         wfs = WebFeatureService(self._url, version=self._ogc_version)
-        self._result = len(wfs.contents)
+        return len(wfs.contents)
 
     def check_for_wfs_layer(self,layer_name):
         """
-        Checks for a layer of a given name.
-        Fail if the layer name is not found
-        | Check for layer | my_layer_name |
+        Checks for a layer of a given name for the current service url. Returns boolean
+        Returns false if the layer name is not found
+        | ${layer_exists} | Check for wfs layer | dentists |
+        | Should be true | ${layer_exists} |
 
         """
         wfs = WebFeatureService(self._url, version=self._ogc_version)
-        self._result = layer_name in wfs.contents.keys()
+        return layer_name in wfs.contents.keys()
 
     #WMS Layer methods
 
-    def check_get_wms_image(self,layer_name,srs,min_x,min_y,max_x,max_y,min_size=0):
+    def get_wms_image_size(self,layer_name,srs,min_x,min_y,max_x,max_y):
         """
-        Check that we can successfully get a png image
-        | Check get wms image | my_layer_name | srs (e.g. EPSG:4326) | MinX | MinY | MaxX |MaxY
-        | Minimum size (KB) |
+        Get the size of the png image returned for the current service url
+        | set service url | ${WMS_URL} |
+	    | ${image_size_in_kb} | get wms image size | bathymetry | EPSG:4326 | -112 | 55 | -106 | 71 |
+	    | ${greater_than_5kb} | ${image_size_in_kb} > 5 |
+	    | Should Be True | ${greater_than_5kb} |
+       
+        
+        returns an integer which is the size of the image in kB
+        
         """
         wms = WebMapService(self._url,version=self._ogc_version)
 
@@ -99,18 +107,8 @@ class OGCServiceLibrary(RequestsLibrary):
 
         os.remove('test.png')
 
-        if float(size) < float(min_size):
-            raise AssertionError("Image is of size %s KB, less that expected size of %s KB" % (size,min_size))
-
-
-    def result_should_be(self,expected=0):
-        """
-        Compares two values as strings, fail if not equal, example:
-        | Result should be | my_expected_result |
-
-        """
-        if str(self._result) != str(expected):
-            raise AssertionError("%s == %s" % (self._result, expected))
+        return int(math.ceil(size)) 
+        
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
