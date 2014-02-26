@@ -12,6 +12,7 @@
 
 from owslib.wfs import WebFeatureService
 from owslib.wms import WebMapService
+from owslib.csw import CatalogueServiceWeb
 from RequestsLibrary import RequestsLibrary
 import os
 import math
@@ -109,7 +110,21 @@ class OGCServiceLibrary(RequestsLibrary):
 
         return int(math.ceil(size)) 
         
-
+    #CSW Methods
+    
+    def check_for_property(self,p):
+        """
+        Check that the specified dataset is available for the current URL.
+        Returns boolean- false if the dataset is not found
+        | set service url             | ${CSWSERVICE_URL}        |
+        | ${dataset_exists}           | Check for property       | free parking             |
+        | Should be True              | ${dataset_exists}        |
+        """
+        
+        csw = CatalogueServiceWeb(self._url)
+        csw.getdomain('Title', dtype='property')
+        return p in csw.results.values()[0]
+        
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
 
