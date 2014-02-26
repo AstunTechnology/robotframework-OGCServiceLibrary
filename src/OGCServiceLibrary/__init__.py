@@ -80,6 +80,31 @@ class OGCServiceLibrary(RequestsLibrary):
 
     #WMS Layer methods
 
+    def check_for_wms_layer(self, layer_name):
+        """
+        Checks for a layer of a given name for the current service url.
+        Returns boolean, false if the layer name is not found
+        | ${layer_exists} | Check for wms layer | ospremium |
+        | Should be true | ${layer_exists} |
+        """
+        wms = WebMapService(self._url, version=self._ogc_version)
+        return layer_name in wms.contents.keys()
+
+    def check_advertised_wms_layers(self):
+        """
+        Makes a GetMap request for each layer advertised by WMS service.
+        An exception is raised on failure.
+        | Check advertised wms layers |
+        """
+        wms = WebMapService(self._url, version=self._ogc_version)
+        for layer in wms.contents.values():
+            wms.getmap(
+                layers=[layer.name],
+                srs=layer.crsOptions[0],
+                bbox=layer.boundingBox[0:-1],
+                size=(300, 300),
+                format=wms.getOperationByName('GetMap').formatOptions[0])
+
     def get_wms_image_size(self,layer_name,srs,min_x,min_y,max_x,max_y):
         """
         Get the size of the png image returned for the current service url
